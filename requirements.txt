@@ -3,3 +3,5 @@ uvicorn
 redis
 psycopg2-binary
 pandas
+alembic
+pydantic
