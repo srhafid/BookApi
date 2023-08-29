@@ -1,6 +1,5 @@
 # virtualizations
 env/
 
-
 # Global vars
 .env
