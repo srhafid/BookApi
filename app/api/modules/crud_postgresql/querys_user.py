@@ -1,104 +1,86 @@
+from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
-from app.api.models.model import Urls
+from app.api.models.model import User
 from app.api.connections.db import DBContext
 from app.api.modules.logger_modify import ColoredLogger
 
 
-class UrlDataRepository:
+class UserRepository:
     """
-    Provides CRUD operations for URLs data.
+    Provides CRUD operations for User data.
 
-    This class encapsulates the operations to manage URL data in the database.
+    This class encapsulates the operations to manage User data in the database.
     """
 
     def __init__(self, db: DBContext, logger: ColoredLogger):
         """
-        Initializes a new instance of UrlDataRepository.
+        Initializes a new instance of UserRepository.
 
         Args:
             db (DBContext): The database context to use for database operations.
-            redis (RedisManager): The Redis manager to use for Redis operations.
             logger (ColoredLogger): The logger instance to use for logging.
         """
         self.logger = logger.get_logger()
         self.db = db
 
-    def create_url(
-        self, title: str, description: str, author: str, rating: int, user_id: int
-    ) -> Urls:
+    def create_user(self, username: str, password: str, role: str) -> User:
         """
-        Creates a new URL in the database and stores the log in Redis.
+        Creates a new User in the database.
 
         Args:
-            title (str): The title of the URL.
-            description (str): The description of the URL.
-            author (str): The author of the URL.
-            rating (int): The rating of the URL.
-            user_id (int): The ID of the user to whom the URL belongs.
+            username (str): The username of the User.
+            password (str): The password of the User.
+            role (str): The role of the User.
 
         Returns:
-            Urls: The created Urls object.
+            User: The created User object.
 
         Raises:
             SQLAlchemyError: If an error occurs during database operations.
         """
         try:
-            url = Urls(
-                title=title,
-                description=description,
-                author=author,
-                rating=rating,
-                user_id=user_id,
-            )
-            self.db.add(url)
+            user = User(username=username, password=password, role=role)
+            self.db.add(user)
             self.db.commit()
-            self.db.refresh(url)
-            self.logger.info("URL created: %s", url.title)
-
-            log_message = f"URL created: {url.title}"
-            self.logger.info("URL log stored in Redis: %s", log_message)
-
-            return url
+            self.db.refresh(user)
+            self.logger.info("User created: %s", user.username)
+            return user
         except SQLAlchemyError as e:
             self.db.rollback()
-            self.logger.error("Error creating URL: %s", str(e))
+            self.logger.error("Error creating user: %s", str(e))
             raise e
 
-    def read_url(self, url_id: int) -> Urls:
+    def read_user(self, user_id: int) -> User:
         """
-        Retrieves a URL from the database by URL ID and stores the log in Redis.
+        Retrieves a User from the database by User ID.
 
         Args:
-            url_id (int): The ID of the URL to retrieve.
+            user_id (int): The ID of the User to retrieve.
 
         Returns:
-            Urls: The retrieved Urls object.
+            User: The retrieved User object.
 
         Raises:
-            ValueError: If the URL with the specified ID is not found.
+            ValueError: If the User with the specified ID is not found.
             SQLAlchemyError: If an error occurs during database operations.
         """
         try:
-            url = self.db.query(Urls).filter(Urls.id == url_id).first()
-            if not url:
-                self.logger.warning("URL not found with ID: %d", url_id)
-                raise ValueError("URL not found")
-            self.logger.info("URL retrieved: %s", url.title)
-
-            log_message = f"URL retrieved: {url.title}"
-            self.logger.info("URL log stored in Redis: %s", log_message)
-
-            return url
+            user = self.db.query(User).filter(User.id == user_id).first()
+            if not user:
+                self.logger.warning("User not found with ID: %d", user_id)
+                raise ValueError("User not found")
+            self.logger.info("User retrieved: %s", user.username)
+            return user
         except SQLAlchemyError as e:
-            self.logger.error("Error reading URL: %s", str(e))
+            self.logger.error("Error reading user: %s", str(e))
             raise e
 
-    def update_url(self, url_id: int, new_data: dict) -> bool:
+    def update_user(self, user_id: int, new_data: dict) -> bool:
         """
-        Updates a URL in the database and stores the log in Redis.
+        Updates a User in the database.
 
         Args:
-            url_id (int): The ID of the URL to update.
+            user_id (int): The ID of the User to update.
             new_data (dict): Dictionary containing the new data to update.
 
         Returns:
@@ -108,31 +90,27 @@ class UrlDataRepository:
             SQLAlchemyError: If an error occurs during database operations.
         """
         try:
-            url = self.read_url(url_id)
-            if not url:
+            user = self.read_user(user_id)
+            if not user:
                 return False
 
             for key, value in new_data.items():
-                setattr(url, key, value)
+                setattr(user, key, value)
 
             self.db.commit()
-            self.logger.info("URL updated: %s", url.title)
-
-            log_message = f"URL updated: {url.title}"
-            self.logger.info("URL log stored in Redis: %s", log_message)
-
+            self.logger.info("User updated: %s", user.username)
             return True
         except SQLAlchemyError as e:
             self.db.rollback()
-            self.logger.error("Error updating URL: %s", str(e))
+            self.logger.error("Error updating user: %s", str(e))
             raise e
 
-    def delete_url(self, url_id: int) -> bool:
+    def delete_user(self, user_id: int) -> bool:
         """
-        Deletes a URL from the database and stores the log in Redis.
+        Deletes a User from the database.
 
         Args:
-            url_id (int): The ID of the URL to delete.
+            user_id (int): The ID of the User to delete.
 
         Returns:
             bool: True if the operation was successful, False otherwise.
@@ -141,19 +119,15 @@ class UrlDataRepository:
             SQLAlchemyError: If an error occurs during database operations.
         """
         try:
-            url = self.read_url(url_id)
-            if not url:
+            user = self.read_user(user_id)
+            if not user:
                 return False
 
-            self.db.delete(url)
+            self.db.delete(user)
             self.db.commit()
-            self.logger.info("URL deleted: %s", url.title)
-
-            log_message = f"URL deleted: {url.title}"
-            self.logger.info("URL log stored in Redis: %s", log_message)
-
+            self.logger.info("User deleted: %s", user.username)
             return True
         except SQLAlchemyError as e:
             self.db.rollback()
-            self.logger.error("Error deleting URL: %s", str(e))
+            self.logger.error("Error deleting user: %s", str(e))
             raise e

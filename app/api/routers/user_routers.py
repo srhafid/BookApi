@@ -1,19 +1,46 @@
 from fastapi import APIRouter, Depends
-from fastapi import FastAPI, Depends, HTTPException
-from passlib.context import CryptContext
-from pydantic import BaseModel
-from sqlalchemy import create_engine, Column, Integer, String
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
+from app.api.modules.logger_modify import ColoredLogger
+from app.api.connections.db import DBContext
+from app.api.modules.redis_conf.redis_conf import RedisManager
+from app.api.controllers.user_controller import UserController
+from app.api.dependencies import get_logger, get_db, get_redis_manager
 
 router = APIRouter()
 
 
-@router.post("/login")
-async def login(user_data: UserLogin, db: Session = Depends(get_db)):
-    user = get_user(db, user_data.username)
-    if not user or not verify_password(user_data.password, user.hashed_password):
-        raise HTTPException(status_code=400, detail="Invalid credentials")
+@router.post("/users/", response_model=dict)
+async def create_user(
+    user_data: dict,
+    logger: ColoredLogger = Depends(get_logger),
+    db: DBContext = Depends(get_db),
+    redis_manager: RedisManager = Depends(get_redis_manager),
+):
+    controller = UserController(logger, db, redis_manager)
+    return controller.create_user(user_data)
 
-    access_token = create_access_token({"sub": user.username})
-    return {"access_token": access_token, "token_type": "bearer"}
+
+@router.get("/users/{user_id}", response_model=dict)
+async def read_user(
+    user_id: int,
+    logger: ColoredLogger = Depends(get_logger),
+    db: DBContext = Depends(get_db),
+    redis_manager: RedisManager = Depends(get_redis_manager),
+):
+    controller = UserController(logger, db, redis_manager)
+    return controller.read_user(user_id)
+
+
+@router.put("/users/{user_id}", response_model=bool)
+async def update_user(
+    user_id: int, new_data: dict, logger: ColoredLogger = Depends(get_logger), db: DBContext = Depends(get_db)
+):
+    controller = UserController(logger, db, redis_manager)
+    return controller.update_user(user_id, new_data)
+
+
+@router.delete("/users/{user_id}", response_model=bool)
+async def delete_user(
+    user_id: int, logger: ColoredLogger = Depends(get_logger), db: DBContext = Depends(get_db)
+):
+    controller = UserController(logger, db, redis_manager)
+    return controller.delete_user(user_id)

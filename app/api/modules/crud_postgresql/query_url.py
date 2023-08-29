@@ -1,7 +1,6 @@
 from sqlalchemy.exc import SQLAlchemyError
 from app.api.connections.db import DBContext
 from app.api.modules.logger_modify import ColoredLogger
-from app.api.modules.redis_conf.redis_conf import RedisManager
 from app.api.models.model import Urls
 
 class UrlDataRepository:

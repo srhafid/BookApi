@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from app.api.controllers.urls_controller import UrlsController
+from app.api.controllers.controller_url import UrlsController
 
 router = APIRouter()
 controller = UrlsController()  # Initialize the controller with appropriate dependencies
