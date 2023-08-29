@@ -8,11 +8,12 @@ class UserCreate(BaseModel):
 class User(UserCreate):
     id: int
 
-class BookCreate(BaseModel):
+class UrlCreate(BaseModel):
     title: str
     author: str
+    file: bytes
 
-class Book(BookCreate):
+class Url(UrlCreate):
     id: int
     rating: int
     user_id: int

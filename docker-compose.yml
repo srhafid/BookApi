@@ -1,4 +1,4 @@
-version: '3.11.4'
+version: '3.11'
 services:
   myapp:
     build:
@@ -7,4 +7,4 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./api:/app
+      - ${PWD}/app
