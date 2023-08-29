@@ -5,3 +5,6 @@ psycopg2-binary
 pandas
 alembic
 pydantic
+pre-commit
+jwt
+colorlog

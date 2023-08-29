@@ -27,7 +27,7 @@ class Urls(Base):
     """
     Class representing a URL in the database.
 
-    Attributes:
+    Attributes: 
         id (int): Unique identifier for the URL.
         title (str): URL's title.
         description (str): URL's description.

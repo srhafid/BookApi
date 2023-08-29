@@ -3,3 +3,7 @@ env/
 
 # Global vars
 .env
+
+# ignore cache
+app/api/__pycache__/
+app/api/routers/__pycache__/
