@@ -51,7 +51,7 @@ def update_user(
     db: Session = Depends(get_db),
 ):
     try:
-        controller = UserController(db, get_redis_manager)
+        controller = UserController(db, get_redis_manager())
         return controller.update_user(user_id, new_data)
     except Exception as e:
         logger.error("Error updating user: %s", str(e))

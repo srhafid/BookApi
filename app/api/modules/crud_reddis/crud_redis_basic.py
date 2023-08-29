@@ -2,6 +2,7 @@ from app.api.modules.logger_modify import ColoredLogger
 from app.api.modules.redis_conf.redis_conf import RedisManager
 from redis import RedisError
 from json import dumps as json_dumps
+from json import loads as json_loads
 
 logger = ColoredLogger().get_logger()
 
@@ -15,7 +16,7 @@ class CrudRedis:
 
     def __init__(
         self,
-        redis: RedisManager,
+        redis: RedisManager
     ) -> None:
         """
         Initializes a new instance of CrudRedis.
@@ -58,7 +59,7 @@ class CrudRedis:
         key = f"url_data:{url_id}"
         value = self.redis_manager.get_client().get(key)
         if value:
-            return json_dumps(value)
+            return json_loads(value)
         return None
 
     def update_url_in_redis(self, url_id: int, new_data: dict):

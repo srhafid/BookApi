@@ -47,5 +47,5 @@ class RedisManager:
         return self.redis_client
 
 
-# Create a global instance of the RedisManager class
-redis_manager = RedisManager()
+# # Create a global instance of the RedisManager class
+# redis_manager = RedisManager()

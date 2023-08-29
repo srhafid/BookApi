@@ -13,12 +13,11 @@ class UrlController:
         self.logger = logger
         self.db = db
         self.url_repo = UrlDataRepository(db)
-        self.redis_repo = CrudRedis(redis_manager)
+        self.redis_repo = CrudRedis(redis=redis_manager)
 
     def create_url(self, url_data: dict):
         try:
             url = self.url_repo.create_url(**url_data)
-            print(url.id)
             self.redis_repo.store_url_in_redis(url.id, url_data)
             return url
         except Exception as e:
@@ -28,7 +27,10 @@ class UrlController:
     def read_url(self, url_id: int):
         try:
             url = self.url_repo.read_url(url_id)
-            return url
+            if url:
+                result = self.redis_repo.get_url_from_redis(url.id)
+                return result
+            return {"status": "hola"}
         except Exception as e:
             self.logger.error("Error reading URL: %s", str(e))
             raise HTTPException(status_code=500, detail="Error reading URL")

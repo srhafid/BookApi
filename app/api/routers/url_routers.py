@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from app.api.connections.instace import get_db
 from app.api.controllers.controller_url import UrlController
-from app.api.connections.db import DBContext
 from app.api.modules.crud_reddis.crud_redis_basic import CrudRedis
 from app.api.modules.logger_modify import ColoredLogger
 from app.api.modules.redis_conf.redis_conf import RedisManager
@@ -11,15 +10,11 @@ router = APIRouter()
 logger = ColoredLogger().get_logger()
 
 
-def get_redis_manager(redis: RedisManager = Depends(RedisManager)):
-    return CrudRedis(redis)
-
-
-@router.post("/url/")
+@router.post("/url/", response_model=dict)
 def create_url(
     url_data: dict,
+    redis_manager: RedisManager = Depends(RedisManager),
     db: Session = Depends(get_db),
-    redis_manager: CrudRedis = Depends(get_redis_manager),
 ):
     try:
         controller = UrlController(db, redis_manager)
@@ -29,11 +24,11 @@ def create_url(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/url/{url_id}")
+@router.get("/url/{url_id}", response_model=dict)
 def read_url(
     url_id: int,
+    redis_manager: RedisManager = Depends(RedisManager),
     db: Session = Depends(get_db),
-    redis_manager: CrudRedis = Depends(get_redis_manager),
 ):
     try:
         controller = UrlController(db, redis_manager)
@@ -45,14 +40,15 @@ def read_url(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.put("/url/{url_id}")
+@router.put("/url/{url_id}", response_model=dict)
 def update_url(
     url_id: int,
     url_data: dict,
+    redis_manager: RedisManager = Depends(RedisManager),
     db: Session = Depends(get_db),
 ):
     try:
-        controller = UrlController(db, get_redis_manager())
+        controller = UrlController(db, redis_manager)
         updated = controller.update_url(url_id, url_data)
         if updated:
             return {"message": "URL updated successfully"}
@@ -61,13 +57,14 @@ def update_url(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/url/{url_id}")
+@router.delete("/url/{url_id}", response_model=dict)
 def delete_url(
     url_id: int,
+    redis_manager: RedisManager = Depends(RedisManager),
     db: Session = Depends(get_db),
 ):
     try:
-        controller = UrlController(db, get_redis_manager())
+        controller = UrlController(db, redis_manager)
         deleted = controller.delete_url(url_id)
         if deleted:
             return {"message": "URL deleted successfully"}
