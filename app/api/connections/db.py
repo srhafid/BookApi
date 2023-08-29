@@ -1,5 +1,3 @@
-from app.api.models.model import *  # Import necessary models
-
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
@@ -10,7 +8,6 @@ SessionLocal = sessionmaker(
     autocommit=False, autoflush=False, bind=engine
 )  # Create local session
 Base = declarative_base()  # Create declarative base
-
 
 class DBContext:
     def __init__(self) -> None:

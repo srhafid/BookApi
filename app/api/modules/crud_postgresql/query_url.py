@@ -1,7 +1,9 @@
 from sqlalchemy.exc import SQLAlchemyError
-from app.api.connections.db import DBContext
-from app.api.modules.logger_modify import ColoredLogger
+from sqlalchemy.orm import Session
 from app.api.models.model import Urls
+from app.api.modules.logger_modify import ColoredLogger
+
+logger = ColoredLogger().get_logger()
 
 class UrlDataRepository:
     """
@@ -10,7 +12,7 @@ class UrlDataRepository:
     This class encapsulates the operations to manage URL data in the database and Redis.
     """
 
-    def __init__(self, db: DBContext, logger: ColoredLogger):
+    def __init__(self, db: Session):
         """
         Initializes a new instance of UrlDataRepository.
 
@@ -19,7 +21,7 @@ class UrlDataRepository:
             redis (RedisManager): The Redis manager to use for Redis operations.
             logger (ColoredLogger): The logger instance to use for logging.
         """
-        self.logger = logger.get_logger()
+        self.logger = logger
         self.db = db
 
     def create_url(self, title: str, description: str, author: str, rating: int, user_id: int) -> Urls:

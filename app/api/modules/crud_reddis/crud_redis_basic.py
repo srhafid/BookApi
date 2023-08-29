@@ -1,6 +1,9 @@
+from app.api.modules.logger_modify import ColoredLogger
 from app.api.modules.redis_conf.redis_conf import RedisManager
 from redis import RedisError
 from json import dumps as json_dumps
+
+logger = ColoredLogger().get_logger()
 
 
 class CrudRedis:
@@ -20,6 +23,7 @@ class CrudRedis:
         Args:
             redis (RedisManager): The Redis manager to use for Redis operations.
         """
+        self.logger = logger
         self.redis_manager = redis
 
     def store_url_in_redis(self, url_id: int, url_data: dict):

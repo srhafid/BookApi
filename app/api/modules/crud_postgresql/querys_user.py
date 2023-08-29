@@ -1,9 +1,9 @@
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from app.api.models.model import User
-from app.api.connections.db import DBContext
 from app.api.modules.logger_modify import ColoredLogger
 
+logger = ColoredLogger().get_logger()
 
 class UserRepository:
     """
@@ -12,7 +12,7 @@ class UserRepository:
     This class encapsulates the operations to manage User data in the database.
     """
 
-    def __init__(self, db: DBContext, logger: ColoredLogger):
+    def __init__(self, db: Session):
         """
         Initializes a new instance of UserRepository.
 
@@ -20,7 +20,7 @@ class UserRepository:
             db (DBContext): The database context to use for database operations.
             logger (ColoredLogger): The logger instance to use for logging.
         """
-        self.logger = logger.get_logger()
+        self.logger = logger
         self.db = db
 
     def create_user(self, username: str, password: str, role: str) -> User:

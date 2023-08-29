@@ -1,24 +1,30 @@
 from fastapi import HTTPException
-from app.api.modules.crud_postgresql.querys_user import UserRepository
-from app.api.modules.logger_modify import ColoredLogger
 from app.api.connections.db import DBContext
+from app.api.modules.crud_postgresql.querys_user import UserRepository
+from app.api.modules.crud_reddis.crud_redis_basic import CrudRedis
+from app.api.modules.logger_modify import ColoredLogger
 from app.api.modules.redis_conf.redis_conf import RedisManager
-from redis import StrictRedis
 
+logger = ColoredLogger().get_logger()
 
 class UserController:
     def __init__(
-        self, logger: ColoredLogger, db: DBContext, redis_manager: RedisManager
+        self, db: DBContext, redis_manager: RedisManager
     ):
-        self.logger = logger.get_logger()
+        self.logger = logger
         self.db = db
-        self.user_repo = UserRepository(db, logger)
-        self.redis_manager = redis_manager
+        self.user_repo = UserRepository(db)
+        self.redis_manager = CrudRedis(redis_manager)
 
     def create_user(self, user_data: dict):
         try:
             user = self.user_repo.create_user(**user_data)
-            return user
+            user_dict = {
+                "id": user.id,
+                "username": user.username,
+                "role": user.role
+            }
+            return user_dict
         except Exception as e:
             self.logger.error("Error creating user: %s", str(e))
             raise HTTPException(status_code=500, detail="Error creating user")
@@ -26,7 +32,12 @@ class UserController:
     def read_user(self, user_id: int):
         try:
             user = self.user_repo.read_user(user_id)
-            return user
+            user_dict = {
+                "id": user.id,
+                "username": user.username,
+                "role": user.role
+            }
+            return user_dict
         except Exception as e:
             self.logger.error("Error reading user: %s", str(e))
             raise HTTPException(status_code=500, detail="Error reading user")

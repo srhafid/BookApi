@@ -1,23 +1,24 @@
 from fastapi import HTTPException
 from app.api.modules.crud_postgresql.query_url import UrlDataRepository
 from app.api.modules.crud_reddis.crud_redis_basic import CrudRedis
-from app.api.modules.logger_modify import ColoredLogger
 from app.api.connections.db import DBContext
+from app.api.modules.logger_modify import ColoredLogger
 from app.api.modules.redis_conf.redis_conf import RedisManager
+
+logger = ColoredLogger().get_logger()
 
 
 class UrlController:
-    def __init__(
-        self, logger: ColoredLogger, db: DBContext, redis_manager: RedisManager
-    ):
-        self.logger = logger.get_logger()
+    def __init__(self, db: DBContext, redis_manager: RedisManager):
+        self.logger = logger
         self.db = db
-        self.url_repo = UrlDataRepository(db, logger)
+        self.url_repo = UrlDataRepository(db)
         self.redis_repo = CrudRedis(redis_manager)
 
     def create_url(self, url_data: dict):
         try:
             url = self.url_repo.create_url(**url_data)
+            print(url.id)
             self.redis_repo.store_url_in_redis(url.id, url_data)
             return url
         except Exception as e:
@@ -53,6 +54,3 @@ class UrlController:
         except Exception as e:
             self.logger.error("Error deleting URL: %s", str(e))
             raise HTTPException(status_code=500, detail="Error deleting URL")
-
-
-
