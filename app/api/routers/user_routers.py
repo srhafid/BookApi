@@ -2,10 +2,10 @@ from sqlalchemy.orm import Session
 from fastapi import APIRouter, Depends, HTTPException
 from app.api.connections.instace import get_db
 from app.api.modules.logger_modify import ColoredLogger
-from app.api.connections.db import DBContext
 from app.api.modules.redis_conf.redis_conf import RedisManager
 from app.api.controllers.controller_users import UserController
 from app.api.modules.crud_reddis.crud_redis_basic import CrudRedis
+from app.api.modules.tokens.token_init import jwt_auth
 
 router = APIRouter()
 logger = ColoredLogger().get_logger()
@@ -13,6 +13,7 @@ logger = ColoredLogger().get_logger()
 """
 Module for user-related routes.
 """
+
 
 def get_redis_manager(redis: RedisManager = Depends(RedisManager)):
     """
@@ -26,7 +27,9 @@ def get_redis_manager(redis: RedisManager = Depends(RedisManager)):
     """
     return CrudRedis(redis)
 
+
 @router.post("/user/", response_model=dict)
+@jwt_auth.token_required
 def create_user(
     user_data: dict,
     db: Session = Depends(get_db),
@@ -53,7 +56,9 @@ def create_user(
         logger.error("Error creating user: %s", str(e))
         raise HTTPException(status_code=500, detail="Error creating user")
 
+
 @router.get("/user/{user_id}", response_model=dict)
+@jwt_auth.token_required
 def read_user(
     user_id: int,
     db: Session = Depends(get_db),
@@ -80,7 +85,9 @@ def read_user(
         logger.error("Error reading user: %s", str(e))
         raise HTTPException(status_code=500, detail="Error reading user")
 
+
 @router.put("/user/{user_id}", response_model=bool)
+@jwt_auth.token_required
 def update_user(
     user_id: int,
     new_data: dict,
@@ -107,7 +114,9 @@ def update_user(
         logger.error("Error updating user: %s", str(e))
         raise HTTPException(status_code=500, detail="Error updating user")
 
+
 @router.delete("/user/{user_id}", response_model=bool)
+@jwt_auth.token_required
 def delete_user(
     user_id: int,
     db: Session = Depends(get_db),

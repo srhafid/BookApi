@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
 from app.api.connections.instace import get_db
 from app.api.controllers.controller_url import UrlController
-from app.api.modules.crud_reddis.crud_redis_basic import CrudRedis
 from app.api.modules.logger_modify import ColoredLogger
 from app.api.modules.redis_conf.redis_conf import RedisManager
+from app.api.modules.tokens.token_init import jwt_auth
 from sqlalchemy.orm import Session
 
 router = APIRouter()
@@ -13,7 +13,9 @@ logger = ColoredLogger().get_logger()
 Module for URL-related routes.
 """
 
+
 @router.post("/url/", response_model=dict)
+@jwt_auth.token_required
 def create_url(
     url_data: dict,
     redis_manager: RedisManager = Depends(RedisManager),
@@ -29,7 +31,7 @@ def create_url(
 
     Returns:
         dict: Created URL information.
-    
+
     Raises:
         HTTPException: If an error occurs during creation.
     """
@@ -40,7 +42,9 @@ def create_url(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @router.get("/url/{url_id}", response_model=dict)
+@jwt_auth.token_required
 def read_url(
     url_id: int,
     redis_manager: RedisManager = Depends(RedisManager),
@@ -69,7 +73,9 @@ def read_url(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @router.put("/url/{url_id}", response_model=dict)
+@jwt_auth.token_required
 def update_url(
     url_id: int,
     url_data: dict,
@@ -100,7 +106,9 @@ def update_url(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @router.delete("/url/{url_id}", response_model=dict)
+@jwt_auth.token_required
 def delete_url(
     url_id: int,
     redis_manager: RedisManager = Depends(RedisManager),
