@@ -3,8 +3,9 @@ from app.api.connections.instace import get_db
 from app.api.controllers.controller_url import UrlController
 from app.api.modules.logger_modify import ColoredLogger
 from app.api.modules.redis_conf.redis_conf import RedisManager
-from app.api.modules.tokens.token_init import jwt_auth
 from sqlalchemy.orm import Session
+from app.api.modules.tokens.access_token import get_current_user, auth_required
+
 
 router = APIRouter()
 logger = ColoredLogger().get_logger()
@@ -15,11 +16,12 @@ Module for URL-related routes.
 
 
 @router.post("/url/", response_model=dict)
-@jwt_auth.token_required
+@auth_required
 def create_url(
     url_data: dict,
     redis_manager: RedisManager = Depends(RedisManager),
     db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
 ):
     """
     Create a new URL.
@@ -44,11 +46,12 @@ def create_url(
 
 
 @router.get("/url/{url_id}", response_model=dict)
-@jwt_auth.token_required
+@auth_required
 def read_url(
     url_id: int,
     redis_manager: RedisManager = Depends(RedisManager),
     db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
 ):
     """
     Get information about a URL by its ID.
@@ -75,12 +78,13 @@ def read_url(
 
 
 @router.put("/url/{url_id}", response_model=dict)
-@jwt_auth.token_required
+@auth_required
 def update_url(
     url_id: int,
     url_data: dict,
     redis_manager: RedisManager = Depends(RedisManager),
     db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
 ):
     """
     Update information about a URL.
@@ -108,11 +112,12 @@ def update_url(
 
 
 @router.delete("/url/{url_id}", response_model=dict)
-@jwt_auth.token_required
+@auth_required
 def delete_url(
     url_id: int,
     redis_manager: RedisManager = Depends(RedisManager),
     db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
 ):
     """
     Delete a URL by its ID.

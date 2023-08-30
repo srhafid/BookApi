@@ -1,11 +1,13 @@
+from fastapi import APIRouter, Depends, Form, HTTPException, Header, status
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-from fastapi import APIRouter, Depends, HTTPException
 from app.api.connections.instace import get_db
+from app.api.models.model import User
 from app.api.modules.logger_modify import ColoredLogger
 from app.api.modules.redis_conf.redis_conf import RedisManager
 from app.api.controllers.controller_users import UserController
 from app.api.modules.crud_reddis.crud_redis_basic import CrudRedis
-from app.api.modules.tokens.token_init import jwt_auth
+from app.api.modules.tokens.access_token import get_current_user, auth_required, auth
 
 router = APIRouter()
 logger = ColoredLogger().get_logger()
@@ -29,11 +31,12 @@ def get_redis_manager(redis: RedisManager = Depends(RedisManager)):
 
 
 @router.post("/user/", response_model=dict)
-@jwt_auth.token_required
+@auth_required
 def create_user(
-    user_data: dict,
+    user_data: dict = Form(...),
     db: Session = Depends(get_db),
     redis_manager: CrudRedis = Depends(get_redis_manager),
+    current_user: dict = Depends(get_current_user),
 ):
     """
     Create a new user.
@@ -58,11 +61,12 @@ def create_user(
 
 
 @router.get("/user/{user_id}", response_model=dict)
-@jwt_auth.token_required
+@auth_required
 def read_user(
     user_id: int,
     db: Session = Depends(get_db),
     redis_manager: CrudRedis = Depends(get_redis_manager),
+    current_user: dict = Depends(get_current_user),
 ):
     """
     Get information about a user by its ID.
@@ -87,11 +91,12 @@ def read_user(
 
 
 @router.put("/user/{user_id}", response_model=bool)
-@jwt_auth.token_required
+@auth_required
 def update_user(
     user_id: int,
     new_data: dict,
     db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
 ):
     """
     Update information about a user.
@@ -116,16 +121,18 @@ def update_user(
 
 
 @router.delete("/user/{user_id}", response_model=bool)
-@jwt_auth.token_required
-def delete_user(
+@auth_required
+async def delete_user(
     user_id: int,
     db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
 ):
     """
     Delete a user by its ID.
 
     Args:
         user_id (int): ID of the user to delete.
+        current_user (dict): Decoded JWT payload of the current user.
         db (Session, optional): Database session. Defaults to using dependency.
 
     Returns:
@@ -140,3 +147,15 @@ def delete_user(
     except Exception as e:
         logger.error("Error deleting user: %s", str(e))
         raise HTTPException(status_code=500, detail="Error deleting user")
+
+
+@router.post("/login")
+def login(
+    username: str = Form(...), password: str = Form(...), db: Session = Depends(get_db)
+):
+    user = db.query(User).filter(User.username == username).first()
+    if user is None or user.password != password:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    token = auth.create_token({"sub": username})
+    return {"access_token": token, "token_type": "bearer"}

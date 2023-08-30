@@ -1,6 +1,8 @@
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
 from app.api.connections.db import Base
+
+
 class User(Base):
     """
     Class representing a user in the database.
@@ -27,7 +29,7 @@ class Urls(Base):
     """
     Class representing a URL in the database.
 
-    Attributes: 
+    Attributes:
         id (int): Unique identifier for the URL.
         title (str): URL's title.
         description (str): URL's description.

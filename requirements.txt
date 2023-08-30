@@ -9,3 +9,6 @@ pre-commit
 jwt
 colorlog
 pytest-sqlalchemy
+PyJWT
+python-multipart
+passlib
