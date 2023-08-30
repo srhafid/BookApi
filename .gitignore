@@ -4,6 +4,22 @@ env/
 # Global vars
 .env
 
-# ignore cache
-app/api/__pycache__/
-app/api/routers/__pycache__/
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+
+# Ignore compiled Python files
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore cached folders
+__pycache__/
+
+# Ignore editor-specific files
+.vscode/
+.idea/
+
+# Ignore logs
+*.log

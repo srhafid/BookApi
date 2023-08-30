@@ -8,3 +8,4 @@ pydantic
 pre-commit
 jwt
 colorlog
+pytest-sqlalchemy

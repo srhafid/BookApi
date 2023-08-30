@@ -1,6 +1,5 @@
 # Este módulo contiene la configuración y ejecución de la aplicación FastAPI.
 from fastapi import FastAPI
-import redis
 
 # Register routers imports
 from app.api.routers.url_routers import router as url_router
